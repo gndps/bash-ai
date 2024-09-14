@@ -12,6 +12,7 @@ import argparse
 import re
 from collections import OrderedDict
 import logging
+from dotenv import load_dotenv
 log = logging.getLogger(__name__)
 log.setLevel(logging.ERROR)
 # logging goes into stderr
@@ -20,6 +21,7 @@ logging.basicConfig(level=logging.ERROR, format="[%(name)s]\t%(asctime)s - %(lev
 
 VERSION = "0.3.0"
 CACHE_FOLDER = "~/.cache/bashai"
+SECRETS_FILE = os.path.expanduser("~/.secrets/openai")
 
 def cache(maxsize=128):
     def decorator(func):
@@ -61,22 +63,13 @@ def cache(maxsize=128):
     return decorator
 
 def get_api_key():
-    # load the api key from .config/openai
-    if os.path.exists(os.path.expanduser("~/.config/openai")):
-        with open(os.path.expanduser("~/.config/openai")) as f:
-            openai.api_key = f.read().strip()
-    else:
-        print("No api key found. Please create a file ~/.config/openai with your api key in it.")
-        # ask for key and store it
-        openai.api_key = input("Please enter your api key: ")
-        if openai.api_key == "":
-            print("No api key provided. Exiting.")
-            sys.exit(1)
-        # make sure the directory exists
-        if not os.path.exists(os.path.expanduser("~/.config")):
-            os.mkdir(os.path.expanduser("~/.config"))
-        with open(os.path.expanduser("~/.config/openai"), "w") as f:
-            f.write(openai.api_key)
+    load_dotenv(os.path.expanduser(SECRETS_FILE))
+
+    if "OPENAI_API_KEY" not in os.environ:
+        print("No api key found in file %s. Please add the line 'OPENAI_API_KEY=your_api_key'." % SECRETS_FILE)
+        sys.exit(1)
+
+    return os.environ["OPENAI_API_KEY"]
 
 def get_context_files():
     context_files = os.listdir(os.getcwd())

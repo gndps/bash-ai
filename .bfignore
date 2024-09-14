@@ -1,0 +1,4 @@
+# ignore everything except init and ai
+*
+!.bfinit
+!ai
