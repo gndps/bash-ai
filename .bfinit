@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 
-INIT_RESTORE_STATE_FILE="$BASH_FILES_REPOS_DIR/bash-ai/.init_restore_state"
+function bfinit() {
+    edcv && pir # activate python venv & install requirements
+}
 
-if [ ! -f "$INIT_RESTORE_STATE_FILE" ]; then
-(
+function ai() { 
+    (
     dir_path="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
     cd $dir_path
-    edcv # create/activate venv
-    pir # install requirements
-    ignore_file_path="$(realpath "$(dirname "${BASH_SOURCE[0]}")")/.bfignore"
-    echo >> "$ignore_file_path"
-    echo "!ai" >> "$ignore_file_path"
-    echo "true" > "$INIT_RESTORE_STATE_FILE"
-)
-fi
+    edcv # activate venv
+    COMMAND_PATH=$dir_path/ai.py
+    python $COMMAND_PATH $@
+    )
+}
